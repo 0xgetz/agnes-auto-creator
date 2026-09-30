@@ -1,0 +1,57 @@
+<svg width="1200" height="320" viewBox="0 0 1200 320" fill="none" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Agnes Auto Creator">
+  <defs>
+    <linearGradient id="bbg" x1="0" y1="0" x2="1200" y2="320" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#0C1420"/>
+      <stop offset="0.5" stop-color="#0A1019"/>
+      <stop offset="1" stop-color="#060A10"/>
+    </linearGradient>
+    <linearGradient id="bstr" x1="80" y1="60" x2="1120" y2="280" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#3EC6A0"/>
+      <stop offset="0.55" stop-color="#39B4C8"/>
+      <stop offset="1" stop-color="#2B8FD6"/>
+    </linearGradient>
+    <linearGradient id="btxt" x1="0" y1="0" x2="900" y2="0" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#F2F7FB"/>
+      <stop offset="1" stop-color="#9FB3C4"/>
+    </linearGradient>
+    <filter id="bglow" x="-30%" y="-30%" width="160%" height="160%">
+      <feGaussianBlur stdDeviation="7" result="b"/>
+      <feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+  </defs>
+
+  <rect width="1200" height="320" fill="url(#bbg)"/>
+  <g opacity="0.14" stroke="url(#bstr)" stroke-width="1">
+    <path d="M0 250 H1200"/><path d="M0 200 H1200"/><path d="M0 150 H1200"/>
+    <path d="M0 100 H1200"/><path d="M0 50 H1200"/>
+  </g>
+
+  <!-- mark -->
+  <g transform="translate(84 60)">
+    <rect x="0" y="0" width="200" height="200" rx="46" fill="#0B1119" stroke="#1B2635"/>
+    <ellipse cx="100" cy="104" rx="66" ry="32" transform="rotate(-24 100 104)"
+             stroke="url(#bstr)" stroke-width="2.4" opacity="0.35"/>
+    <path d="M58 148 L100 60 L142 148" stroke="url(#bstr)" stroke-width="11"
+          stroke-linecap="round" stroke-linejoin="round" filter="url(#bglow)"/>
+    <path d="M78 118 H122" stroke="url(#bstr)" stroke-width="11" stroke-linecap="round"/>
+    <circle cx="100" cy="119" r="9.5" fill="#0B1119" stroke="url(#bstr)" stroke-width="5"/>
+    <path d="M100 128 V145" stroke="url(#bstr)" stroke-width="5" stroke-linecap="round"/>
+    <path d="M150 52 l4.5 12 L167 68 l-12.5 4 L150 84 l-4.5-12 L133 68 l12.5-4 Z" fill="#7BE8C6"/>
+  </g>
+
+  <!-- text -->
+  <text x="330" y="150" font-family="Inter,Segoe UI,Helvetica,Arial,sans-serif"
+        font-size="74" font-weight="800" fill="url(#btxt)" letter-spacing="-1">Agnes Auto Creator</text>
+  <text x="334" y="200" font-family="Inter,Segoe UI,Helvetica,Arial,sans-serif"
+        font-size="25" font-weight="500" fill="#7C8EA0">Automated account &amp; API-key provisioning for Agnes AI</text>
+
+  <!-- pills -->
+  <g font-family="Inter,Segoe UI,Helvetica,Arial,sans-serif" font-size="17" font-weight="600">
+    <rect x="334" y="226" width="128" height="38" rx="19" fill="#3EC6A01F" stroke="#3EC6A055"/>
+    <text x="360" y="251" fill="#7BE8C6">Node.js</text>
+    <rect x="474" y="226" width="150" height="38" rx="19" fill="#39B4C81F" stroke="#39B4C855"/>
+    <text x="500" y="251" fill="#8FD8E6">Playwright</text>
+    <rect x="636" y="226" width="112" height="38" rx="19" fill="#2B8FD61F" stroke="#2B8FD655"/>
+    <text x="662" y="251" fill="#9CC8F2">MIT</text>
+  </g>
+</svg>

@@ -1,0 +1,43 @@
+<svg width="256" height="256" viewBox="0 0 256 256" fill="none" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Agnes Auto Creator logo">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="256" y2="256" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#0E1621"/>
+      <stop offset="1" stop-color="#060A10"/>
+    </linearGradient>
+    <linearGradient id="stroke" x1="40" y1="36" x2="216" y2="220" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#3EC6A0"/>
+      <stop offset="0.55" stop-color="#39B4C8"/>
+      <stop offset="1" stop-color="#2B8FD6"/>
+    </linearGradient>
+    <linearGradient id="spark" x1="150" y1="60" x2="210" y2="130" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#7BE8C6"/>
+      <stop offset="1" stop-color="#3EC6A0"/>
+    </linearGradient>
+    <filter id="glow" x="-40%" y="-40%" width="180%" height="180%">
+      <feGaussianBlur stdDeviation="6" result="b"/>
+      <feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+  </defs>
+
+  <rect x="4" y="4" width="248" height="248" rx="58" fill="url(#bg)"/>
+  <rect x="4.5" y="4.5" width="247" height="247" rx="57.5" stroke="#1B2635" stroke-width="1"/>
+
+  <!-- orbit ring -->
+  <ellipse cx="128" cy="132" rx="86" ry="42" transform="rotate(-24 128 132)"
+           stroke="url(#stroke)" stroke-width="3" opacity="0.35"/>
+
+  <!-- stylised A (Agnes) -->
+  <path d="M74 186 L128 74 L182 186" stroke="url(#stroke)" stroke-width="13"
+        stroke-linecap="round" stroke-linejoin="round" filter="url(#glow)"/>
+  <path d="M100 148 H156" stroke="url(#stroke)" stroke-width="13" stroke-linecap="round"/>
+
+  <!-- key hole (API key) -->
+  <circle cx="128" cy="150" r="12" fill="#0B1119" stroke="url(#stroke)" stroke-width="6"/>
+  <path d="M128 162 V182" stroke="url(#stroke)" stroke-width="6" stroke-linecap="round"/>
+
+  <!-- spark / automation -->
+  <path d="M188 66 l5.5 14.5 L208 86 l-14.5 5.5 L188 106 l-5.5-14.5 L168 86 l14.5-5.5 Z"
+        fill="url(#spark)"/>
+  <circle cx="70" cy="80" r="4.5" fill="#39B4C8"/>
+  <circle cx="62" cy="118" r="3" fill="#2B8FD6"/>
+</svg>

@@ -1,0 +1,48 @@
+{
+  "name": "agnes-auto-creator",
+  "version": "1.0.0",
+  "description": "Automated account & API-key provisioning for Agnes AI — fresh email, random credentials, end-to-end.",
+  "type": "module",
+  "main": "src/index.mjs",
+  "bin": {
+    "agnes-auto-creator": "src/index.mjs"
+  },
+  "files": [
+    "src",
+    "docs/assets",
+    "README.md",
+    "LICENSE"
+  ],
+  "scripts": {
+    "start": "node src/index.mjs",
+    "create": "node src/index.mjs -n 1",
+    "batch": "node src/index.mjs -n 5 --concurrency 2",
+    "postinstall": "playwright install chromium"
+  },
+  "keywords": [
+    "agnes-ai",
+    "automation",
+    "playwright",
+    "provisioning",
+    "api-key",
+    "account-creator",
+    "temporary-email",
+    "cli"
+  ],
+  "author": "0xgetz",
+  "license": "MIT",
+  "homepage": "https://github.com/0xgetz/agnes-auto-creator#readme",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/0xgetz/agnes-auto-creator.git"
+  },
+  "bugs": {
+    "url": "https://github.com/0xgetz/agnes-auto-creator/issues"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "dependencies": {
+    "playwright": "1.47.2"
+  }
+}

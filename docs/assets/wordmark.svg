@@ -1,0 +1,21 @@
+<svg width="420" height="110" viewBox="0 0 420 110" fill="none" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Agnes Auto Creator">
+  <defs>
+    <linearGradient id="mstr" x1="0" y1="0" x2="110" y2="110" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#3EC6A0"/><stop offset="0.55" stop-color="#39B4C8"/><stop offset="1" stop-color="#2B8FD6"/>
+    </linearGradient>
+    <linearGradient id="mtxt" x1="120" y1="0" x2="420" y2="0" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#F2F7FB"/><stop offset="1" stop-color="#9FB3C4"/>
+    </linearGradient>
+  </defs>
+  <g transform="translate(8 8)">
+    <rect width="94" height="94" rx="24" fill="#0B1119" stroke="#1B2635"/>
+    <ellipse cx="47" cy="49" rx="31" ry="15" transform="rotate(-24 47 49)" stroke="url(#mstr)" stroke-width="2" opacity="0.35"/>
+    <path d="M27 70 L47 27 L67 70" stroke="url(#mstr)" stroke-width="7" stroke-linecap="round" stroke-linejoin="round"/>
+    <path d="M36 56 H58" stroke="url(#mstr)" stroke-width="7" stroke-linecap="round"/>
+    <circle cx="47" cy="57" r="5.5" fill="#0B1119" stroke="url(#mstr)" stroke-width="3.5"/>
+    <path d="M47 62.5 V71" stroke="url(#mstr)" stroke-width="3.5" stroke-linecap="round"/>
+    <path d="M71 24 l2.6 7 L81 33.6 l-7 2.6 L71 43 l-2.6-6.8 L61 33.6 l7.4-2.6 Z" fill="#7BE8C6"/>
+  </g>
+  <text x="122" y="52" font-family="Inter,Segoe UI,Helvetica,Arial,sans-serif" font-size="30" font-weight="800" fill="url(#mtxt)" letter-spacing="-0.5">Agnes Auto Creator</text>
+  <text x="124" y="78" font-family="Inter,Segoe UI,Helvetica,Arial,sans-serif" font-size="14" font-weight="500" fill="#7C8EA0">automated provisioning toolkit</text>
+</svg>

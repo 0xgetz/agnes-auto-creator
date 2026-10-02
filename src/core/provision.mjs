@@ -1,5 +1,11 @@
 /**
- * Core provisioning flow: one Agnes account + one API key.
+ * Core provisioning flow (fixed): one Agnes account + one API key.
+ *
+ * Fixes over upstream:
+ *  - the zenvex step can fail transiently (Cloudflare / mail delay), so each
+ *    account is retried with a fresh email up to `opts.retries` times;
+ *  - the reason for failure is classified so the caller can rotate proxies;
+ *  - Turnstile timeout is passed through and bounded.
  *
  * @module core/provision
  */
@@ -15,21 +21,20 @@ import {
 } from "../utils/random.mjs";
 import { log } from "../utils/logger.mjs";
 
-/**
- * @typedef {Object} ProvisionOptions
- * @property {string} [domain]        zenvex receiving domain
- * @property {number} [timeout]       ms to wait for the verification email
- * @property {string} [keyProfile]    api_key_profile (default "default")
- */
+const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 
-/**
- * Provision a single account end-to-end.
- *
- * @param {import('playwright').BrowserContext} context
- * @param {ProvisionOptions} [opts]
- * @returns {Promise<object>} result record (ok:true) or failure record (ok:false)
- */
-export async function provisionOne(context, opts = {}) {
+/** Classify an error so callers can decide to retry or rotate. */
+function classify(err) {
+  const m = (err && err.message ? err.message : String(err)).toLowerCase();
+  if (m.includes("turnstile")) return "turnstile";
+  if (m.includes("too many registration attempts") && m.includes("domain")) return "rate-domain";
+  if (m.includes("too many registration attempts") && m.includes("ip")) return "rate-ip";
+  if (m.includes("timed out waiting for the verification email")) return "mail-timeout";
+  if (m.includes("verification code is invalid or expired")) return "code-expired";
+  return "other";
+}
+
+async function attempt(context, opts, attemptNo) {
   const request = context.request;
   const page = await context.newPage();
   const started = Date.now();
@@ -42,12 +47,16 @@ export async function provisionOne(context, opts = {}) {
   const keyName = randomKeyName();
 
   try {
-    log.step(`provisioning ${email} (name: ${fullName})`);
+    log.step(`[try ${attemptNo}] provisioning ${email} (name: ${fullName})`);
 
     await agnes.sendVerificationCode(request, email);
     log.info("verification code requested from Agnes");
 
-    const code = await waitForCode(page, local, { timeout: opts.timeout });
+    const code = await waitForCode(page, local, {
+      timeout: opts.timeout,
+      turnstileTimeout: opts.turnstileTimeout,
+      domain,
+    });
     log.info(`verification code received: ${code}`);
 
     const reg = await agnes.register(request, { email, password, code });
@@ -62,7 +71,7 @@ export async function provisionOne(context, opts = {}) {
       keyName,
       opts.keyProfile || "default",
     );
-    log.ok(`API key created: ${apiKey}`);
+    log.ok(`API key created`);
 
     return {
       ok: true,
@@ -78,15 +87,44 @@ export async function provisionOne(context, opts = {}) {
       created_at: new Date().toISOString(),
     };
   } catch (err) {
-    log.error(`${email} failed: ${err.message}`);
+    const kind = classify(err);
     return {
       ok: false,
       email,
       error: err.message,
+      error_kind: kind,
       elapsed_ms: Date.now() - started,
       created_at: new Date().toISOString(),
     };
   } finally {
     await page.close().catch(() => {});
   }
+}
+
+/**
+ * Provision a single account end-to-end, with retries.
+ *
+ * @param {import('playwright').BrowserContext} context
+ * @param {object} [opts]
+ * @returns {Promise<object>} result record
+ */
+export async function provisionOne(context, opts = {}) {
+  const retries = Number.isInteger(opts.retries) ? opts.retries : 3;
+  let last;
+  for (let i = 1; i <= retries + 1; i++) {
+    last = await attempt(context, opts, i);
+    if (last.ok) return last;
+
+    // Failures that a retry cannot fix: abort immediately.
+    if (last.error_kind === "rate-domain" || last.error_kind === "rate-ip") {
+      log.warn(`${last.error_kind}: stopping retries for this account`);
+      return last;
+    }
+    if (i <= retries) {
+      const backoff = Math.min(8000 * i, 30000);
+      log.warn(`attempt ${i} failed (${last.error_kind}); retrying in ${backoff}ms`);
+      await sleep(backoff);
+    }
+  }
+  return last;
 }

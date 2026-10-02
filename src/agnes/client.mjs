@@ -1,22 +1,24 @@
 /**
- * Agnes AI REST client.
+ * Agnes AI REST client (fixed).
  *
- * The Agnes platform backend is a plain JSON API. It is called through a
- * Playwright APIRequestContext so that TLS fingerprint and headers stay
- * browser-like and we never hit CORS limits.
+ * Changes over upstream:
+ *  - all calls go through a small `sleep` + retry on 5xx / network blips;
+ *  - status-aware errors so the caller can classify rate limits;
+ *  - base URL overridable via AGNES_API_BASE.
  *
- * Endpoints (verified against the live platform):
- *   GET  /api/verification?email=<email>&purpose=register   -> email a code
+ * Endpoints:
+ *   GET  /api/verification?email=<email>&purpose=register
  *   POST /api/user/register   {email,password,password_confirm,code}
- *   POST /api/user/login      {username,password}           -> {access_token}
- *   POST /api/token           {name,api_key_profile}        -> {key}
+ *   POST /api/user/login      {username,password}  -> {access_token}
+ *   POST /api/token           {name,api_key_profile} -> {key}
  *
  * @module agnes/client
  */
 
-export const AGNES_API = "https://platform-backend.agnes-ai.com";
+export const AGNES_API = process.env.AGNES_API_BASE || "https://platform-backend.agnes-ai.com";
 
-/** Default headers every Agnes request carries. */
+const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
+
 function baseHeaders(token) {
   const h = {
     "Content-Type": "application/json",
@@ -29,13 +31,7 @@ function baseHeaders(token) {
   return h;
 }
 
-/**
- * Thin JSON wrapper around the request context.
- * @param {import('playwright').APIRequestContext} request
- * @param {string} path
- * @param {{method?:string, body?:object, token?:string}} [opts]
- */
-async function api(request, path, { method = "GET", body, token } = {}) {
+async function raw(request, path, { method = "GET", body, token } = {}) {
   const res = await request.fetch(`${AGNES_API}${path}`, {
     method,
     headers: baseHeaders(token),
@@ -47,48 +43,73 @@ async function api(request, path, { method = "GET", body, token } = {}) {
   try {
     json = await res.json();
   } catch {
-    /* non-JSON body */
+    /* non-JSON */
   }
   return { status: res.status(), json };
 }
 
-/** Ask Agnes to email a verification code for `purpose` (default register). */
+/** Retry transient 5xx/network errors up to `tries` times. */
+async function api(request, path, opts = {}) {
+  const tries = opts.tries ?? 3;
+  let last;
+  for (let i = 1; i <= tries; i++) {
+    try {
+      const r = await raw(request, path, opts);
+      if (r.status >= 500 && i < tries) {
+        await sleep(1000 * i);
+        continue;
+      }
+      return r;
+    } catch (e) {
+      last = e;
+      if (i < tries) {
+        await sleep(1000 * i);
+        continue;
+      }
+      throw e;
+    }
+  }
+  throw last;
+}
+
+/** Raise an error carrying the HTTP status and Agnes message. */
+function fail(step, status, json) {
+  const msg = json?.message || JSON.stringify(json);
+  const e = new Error(`${step} failed (HTTP ${status}): ${msg}`);
+  e.status = status;
+  e.agnesCode = json?.code;
+  return e;
+}
+
 export async function sendVerificationCode(request, email, purpose = "register") {
   const { status, json } = await api(
     request,
     `/api/verification?email=${encodeURIComponent(email)}&purpose=${purpose}`,
   );
-  if (status !== 200 || json?.code !== 200) {
-    throw new Error(`verification send failed (HTTP ${status}): ${JSON.stringify(json)}`);
-  }
+  if (status !== 200 || json?.code !== 200) throw fail("verification send", status, json);
   return json;
 }
 
-/** Create the account. Requires the emailed verification `code`. */
 export async function register(request, { email, password, code }) {
   const { status, json } = await api(request, "/api/user/register", {
     method: "POST",
     body: { email, password, password_confirm: password, code },
   });
-  if (status !== 200 || json?.code !== 200) {
-    throw new Error(`register failed (HTTP ${status}): ${JSON.stringify(json)}`);
-  }
+  if (status !== 200 || json?.code !== 200) throw fail("register", status, json);
   return json;
 }
 
-/** Log in and return the session ({ access_token, token_type, user }). */
 export async function login(request, { email, password }) {
   const { status, json } = await api(request, "/api/user/login", {
     method: "POST",
     body: { username: email, password },
   });
   if (status !== 200 || json?.code !== 200 || !json.data?.access_token) {
-    throw new Error(`login failed (HTTP ${status}): ${JSON.stringify(json)}`);
+    throw fail("login", status, json);
   }
   return json.data;
 }
 
-/** Create a personal API key and return the `sk-...` secret. */
 export async function createApiKey(request, token, name, profile = "default") {
   const { status, json } = await api(request, "/api/token", {
     method: "POST",
@@ -96,7 +117,7 @@ export async function createApiKey(request, token, name, profile = "default") {
     body: { name, api_key_profile: profile },
   });
   if (status !== 200 || json?.code !== 200 || !json.data?.key) {
-    throw new Error(`key creation failed (HTTP ${status}): ${JSON.stringify(json)}`);
+    throw fail("key creation", status, json);
   }
   return json.data.key;
 }
